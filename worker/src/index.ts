@@ -1,27 +1,33 @@
-import { Hono } from "hono";
-import { logger } from "hono/logger";
-import onboardingRouter from "./routes/onboardingRouter";
-import onboardingRouteConstants from "./constants/routes/onboardingRouteConstants";
 import connectDB from "@/db/db";
 
-const app = new Hono();
-
-// Initialize DB connection
-(async () => {
+const server = {
+  port: 8000,
+  fetch: async (request: Request) => {
     try {
-        await connectDB();
+      // Test DB connection
+      await connectDB();
+      
+      return new Response(JSON.stringify({ 
+        message: "Server is running and DB is connected!" 
+      }), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
     } catch (error) {
-        console.error('Failed to connect to MongoDB:', error);
-        // Continue running the app, but MongoDB features won't work
+      console.error('Server error:', error);
+      return new Response(JSON.stringify({ 
+        error: "Server error",
+        details: error instanceof Error ? error.message : "Unknown error"
+      }), {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
     }
-})();
+  }
+};
 
-app.use("*", logger());
-app.route(onboardingRouteConstants.BASE_PATH, onboardingRouter);
-
-
-export default {
-  port : 8000,
-  hostname : "0.0.0.0",
-  fetch : app.fetch
-}
+export default server;
