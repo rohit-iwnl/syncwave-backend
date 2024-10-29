@@ -1,21 +1,19 @@
-FROM oven/bun:latest
+FROM oven/bun:1.0.25
 
 WORKDIR /app
 
 # Copy package files
-COPY package*.json bun.lockb ./
+COPY package.json bun.lockb ./
 
 # Install dependencies
-RUN bun install
+RUN bun install --frozen-lockfile
 
 # Copy source code
 COPY . .
 
-# Expose the port your app runs on
-EXPOSE 8000
-
+# List contents to debug
 RUN ls -la
 RUN ls -la src/
 
-# Start the application
-CMD ["bun", "run", "dev"]
+# Keep container running for debugging
+CMD ["sh", "-c", "ls -la && echo 'Directory contents above' && bun run dev"]
