@@ -33,7 +33,6 @@ onboardingRouter.post(
 
       return c.json({
         message: `User ${data.name} created successfully`,
-        user: user
       }, 201);
     } catch (error) {
       console.error('Error creating user:', error);
