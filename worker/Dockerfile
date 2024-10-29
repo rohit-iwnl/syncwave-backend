@@ -1,18 +1,19 @@
-FROM oven/bun:1.0.25
-
-WORKDIR /app
-
-# Copy package files
-COPY package*.json bun.lockb ./
+# Base image
+FROM oven/bun:1.0.25 AS base
+WORKDIR /usr/src/app
 
 # Install dependencies
-RUN bun install
+FROM base AS install
+RUN mkdir -p /temp/dev
+COPY package.json bun.lockb /temp/dev/
+RUN cd /temp/dev && bun install --frozen-lockfile
 
-# Copy source code
+# Copy dependencies and source code
+FROM base AS release
+COPY --from=install /temp/dev/node_modules node_modules
 COPY . .
 
-# Expose the port your app runs on
+# Run the app
+USER bun
 EXPOSE 8000
-
-# Start the application
 CMD ["bun", "run", "dev"]
