@@ -1,0 +1,66 @@
+version: '3.8'
+services:
+  worker:
+    container_name: syncwave-worker
+    build: ./worker
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./worker/src:/app/src
+      - ./worker/node_modules:/app/node_modules  # Add node_modules volume for better performance
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+      - MONGODB_URI=mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@syncwave-db:27017/${MONGO_INITDB_DATABASE}?authSource=admin
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME:?err}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD:?err}
+      - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE:?err}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+    depends_on:
+      - syncwave-db
+    networks:
+      - syncwave-network
+
+  syncwave-db:
+    image: mongo:4.4
+    container_name: "syncwave-db"
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME:?err}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD:?err}
+      - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE:?err}
+    volumes:
+      - db-data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - syncwave-network
+    restart: always
+
+  mongoku:
+    container_name: syncwave-mongoku
+    image: huggingface/mongoku
+    ports:
+      - "3100:3100"
+    environment:
+      - MONGOKU_DEFAULT_HOST=mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@syncwave-db:27017/${MONGO_INITDB_DATABASE}?authSource=admin
+    depends_on:
+      syncwave-db:
+        condition: service_healthy
+    networks:
+      - syncwave-network
+    restart: unless-stopped
+
+networks:
+  syncwave-network:
+    driver: bridge
+
+volumes:
+  db-data:
+
