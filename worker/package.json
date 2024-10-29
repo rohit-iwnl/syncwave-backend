@@ -1,6 +1,5 @@
 {
   "name": "worker",
-  "type": "module",
   "scripts": {
     "dev": "bun run --hot src/index.ts",
     "start": "bun run src/index.ts"
@@ -8,7 +7,7 @@
   "dependencies": {
     "@hono/zod-validator": "^0.4.1",
     "hono": "^4.6.7",
-    "mongoose": "^8.0.0",
+    "mongoose": "^8.7.3",
     "zod": "^3.23.8"
   },
   "devDependencies": {

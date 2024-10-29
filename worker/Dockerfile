@@ -3,18 +3,17 @@ FROM oven/bun:1.0.25
 WORKDIR /app
 
 # Copy package files
-COPY package.json ./
-COPY bun.lockb ./
+COPY package.json bun.lockb ./
 
-# Clean install dependencies
-RUN rm -rf node_modules
+# Install dependencies
 RUN bun install --frozen-lockfile
 
 # Copy source code
 COPY . .
 
-# Debug directory contents
-RUN echo "Node Modules Contents:" && ls -la node_modules
+# List contents to debug
+RUN ls -la
+RUN ls -la src/
 
-# Start the application
-CMD ["bun", "run", "dev"]
+# Keep container running for debugging
+CMD ["sh", "-c", "ls -la && echo 'Directory contents above' && bun run dev"]
