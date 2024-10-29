@@ -14,5 +14,8 @@ COPY . .
 # Expose the port your app runs on
 EXPOSE 8000
 
+RUN ls -la
+RUN ls -la src/
+
 # Start the application
 CMD ["bun", "run", "dev"]
