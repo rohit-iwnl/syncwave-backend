@@ -7,7 +7,7 @@ import { User } from "@/models/User";
 const onboardingRouter = new Hono();
 
 const createUser = z.object({
-    name: z.string().min(4)
+  name: z.string().min(4),
 });
 
 onboardingRouter.post(
@@ -16,30 +16,38 @@ onboardingRouter.post(
   async (c) => {
     try {
       const data = c.req.valid("json");
-      
+
       if (await User.findOne({ name: data.name })) {
-        return c.json({
-          message: `User ${data.name} already exists`,
-        }, 400);
+        return c.json(
+          {
+            message: `User ${data.name} already exists`,
+          },
+          400
+        );
       }
 
       // Create new user in database
       const user = new User({
-        name : data.name
-      })
-
+        name: data.name,
+      });
 
       await user.save();
 
-      return c.json({
-        message: `User ${data.name} created successfully`,
-      }, 201);
+      return c.json(
+        {
+          message: `User ${data.name} created successfully`,
+        },
+        201
+      );
     } catch (error) {
-      console.error('Error creating user:', error);
-      return c.json({
-        message: 'Error creating user',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      }, 500);
+      console.error("Error creating user:", error);
+      return c.json(
+        {
+          message: "Error creating user",
+          error: error instanceof Error ? error.message : "Unknown error",
+        },
+        500
+      );
     }
   }
 );
