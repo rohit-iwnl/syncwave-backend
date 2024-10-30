@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import onboardingSchemas from "@/schemas/apiSchemas/onboardingSchemas";
 import { z } from "zod";
 import { User } from "@/models/User";
+import { authenticateToken } from "@/middleware/auth";
 
 const onboardingRouter = new Hono();
 
@@ -25,7 +25,6 @@ onboardingRouter.post(
           400
         );
       }
-
       // Create new user in database
       const user = new User({
         name: data.name,
@@ -51,5 +50,11 @@ onboardingRouter.post(
     }
   }
 );
+
+onboardingRouter.get("/usr", authenticateToken, async (c) => {
+  return c.json({
+    message: "User fetched successfully and authenticated",
+  });
+});
 
 export default onboardingRouter;
