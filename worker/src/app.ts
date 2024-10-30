@@ -3,6 +3,7 @@ import { logger } from "hono/logger";
 import onboardingRouter from "./routes/onboardingRouter";
 import onboardingRouteConstants from "./constants/routes/onboardingRouteConstants";
 import connectDB from "@/db/db";
+import { authenticateToken } from "./middleware/auth";
 
 const app = new Hono();
 
@@ -17,6 +18,13 @@ const app = new Hono();
 })();
 
 app.use("*", logger());
+
+app.get("/" , authenticateToken, (c) => {
+    return c.json({
+        message : "Server is up and serving"
+    })
+})
+
 app.route(onboardingRouteConstants.BASE_PATH, onboardingRouter);
 
 export default app;
