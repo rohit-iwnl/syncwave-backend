@@ -9,6 +9,27 @@ const userSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now
+    },
+    preferences: {
+        type: Object,
+        required: true,
+        default: undefined,
+        lease_sublease_property: {
+            type: Boolean,
+            required: true
+        },
+        find_roomate: {
+            type: Boolean,
+            required: true
+        },
+        sell_buy_product: {
+            type: Boolean,
+            required: true
+        },
+        here_to_explore: {
+            type: Boolean,
+            required: true
+        }
     }
 });
 

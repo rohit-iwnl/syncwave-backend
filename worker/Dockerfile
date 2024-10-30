@@ -27,3 +27,4 @@ ENV NODE_PATH="/usr/local/lib/node_modules"
 ENV NPM_CONFIG_PREFIX="/usr/local"
 
 CMD ["pm2-runtime", "pm2.config.js"]
+# CMD ["bun", "run", "dev"]
