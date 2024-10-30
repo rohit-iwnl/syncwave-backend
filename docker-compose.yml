@@ -9,13 +9,14 @@ services:
       - ./worker/src:/app/src
       - ./worker/node_modules:/app/node_modules  # Add node_modules volume for better performance
     environment:
-      - JWT_SECRET=${JWT_SECRET}
+      - BEARER_TOKEN=${BEARER_TOKEN}
       - MONGODB_URI=mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@syncwave-db:27017/${MONGO_INITDB_DATABASE}?authSource=admin
       - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME:?err}
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD:?err}
       - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE:?err}
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - NODE_ENV=${NODE_ENV}
     depends_on:
       - syncwave-db
     networks:
