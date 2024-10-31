@@ -26,5 +26,6 @@ ENV PATH="/root/.bun/bin:/usr/local/bin:/usr/bin:${PATH}"
 ENV NODE_PATH="/usr/local/lib/node_modules"
 ENV NPM_CONFIG_PREFIX="/usr/local"
 
-CMD ["pm2-runtime", "pm2.config.js"]
-# CMD ["bun", "run", "dev"]
+CMD ["pm2-runtime", "start", "pm2.config.js", "--watch"]
+
+ 

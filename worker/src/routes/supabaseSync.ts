@@ -9,7 +9,7 @@ const supabaseSyncRouter = new Hono();
 
 supabaseSyncRouter.get("/", (c) => {
     return c.json({
-        message: "Supabase sync route",
+        message: "Supabase sync",
     });
 });
 
