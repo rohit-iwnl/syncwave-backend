@@ -10,29 +10,25 @@ const userProfileSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    username: {
-        type: String,
-        required: true
-    },
-    full_name: {
+    phone: {
         type: String,
         default: null
     },
-    avatar_url: {
-        type: String,
+    last_sign_in_at: {
+        type: Date,
         default: null
     },
-    website: {
-        type: String,
-        default: null
-    },
-    has_completed_preferences: {
-        type: Boolean,
-        default: false
+    created_at: {
+        type: Date,
+        default: Date.now
     },
     updated_at: {
         type: Date,
         required: true
+    },
+    deleted_at: {
+        type: Date,
+        default: null
     }
 })
 

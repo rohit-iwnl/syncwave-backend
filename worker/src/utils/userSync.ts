@@ -3,13 +3,12 @@ import UserModel from "@/models/supabase/UserProfile";
 export async function handleUserCreated(userData: any) {
     await UserModel.create({
         supabase_id: userData.id,
-        username: userData.username,
         email: userData.email,
-        full_name: userData.full_name || null,
-        avatar_url: userData.avatar_url || null,
-        website: userData.website || null,
-        has_completed_preferences: userData.has_completed_preferences || false,
-        updated_at: new Date(userData.updated_at)
+        phone: userData.phone || null,
+        last_sign_in_at: userData.last_sign_in_at ? new Date(userData.last_sign_in_at) : null,
+        created_at: userData.created_at ? new Date(userData.created_at) : new Date(),
+        updated_at: new Date(userData.updated_at),
+        deleted_at: userData.deleted_at ? new Date(userData.deleted_at) : null
     });
 }
 
@@ -18,13 +17,11 @@ export async function handleUserUpdated(userData: any) {
         { supabase_id: userData.id },
         {
             $set: {
-                username: userData.username,
                 email: userData.email,
-                full_name: userData.full_name || null,
-                avatar_url: userData.avatar_url || null,
-                website: userData.website || null,
-                has_completed_preferences: userData.has_completed_preferences || false,
-                updated_at: new Date(userData.updated_at)
+                phone: userData.phone || null,
+                last_sign_in_at: userData.last_sign_in_at ? new Date(userData.last_sign_in_at) : null,
+                updated_at: new Date(userData.updated_at),
+                deleted_at: userData.deleted_at ? new Date(userData.deleted_at) : null
             }
         }
     );
