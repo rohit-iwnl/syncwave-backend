@@ -45,4 +45,41 @@ onboardingRouter.post(
   },
 );
 
+onboardingRouter.post(
+  "/set-personal-details",
+  authenticateToken,
+  zValidator("json", onboardingSchemas.setPersonalDetails),
+  async (c) => {
+    try {
+      const body = c.req.valid("json");
+      const { supabase_id, personal_details } = body;
+
+      const user = await UserModel.findOne({
+        supabase_id: supabase_id,
+      });
+
+      if (!user) {
+        return c.json({
+          message: "User not found",
+        }, 404);
+      }
+
+      await UserModel.findOneAndUpdate(
+        { supabase_id: supabase_id },
+        { personal_details: personal_details },
+      );
+
+      return c.json({
+        message: "Personal details updated successfully",
+      }, 200);
+    } catch (error) {
+      console.error("Error updating personal details:", error);
+      return c.json({
+        message: "Error updating personal details",
+        error: error instanceof Error ? error.message : "Unknown error",
+      }, 500);
+    }
+  },
+);
+
 export default onboardingRouter;
