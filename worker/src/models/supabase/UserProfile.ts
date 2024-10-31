@@ -29,6 +29,32 @@ const userProfileSchema = new mongoose.Schema({
     deleted_at: {
         type: Date,
         default: null
+    },
+    preferences: {
+        type: {
+            find_roommate: {
+                type: Boolean,
+                required: true,
+                default: false
+            },
+            here_to_explore: {
+                type: Boolean,
+                required: true,
+                default: false
+            },
+            lease_property: {
+                type: Boolean,
+                required: true,
+                default: false
+            },
+            sell_buy_product: {
+                type: Boolean,
+                required: true,
+                default: false
+            }
+        },
+        required: false,
+        default: null
     }
 })
 

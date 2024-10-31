@@ -12,6 +12,17 @@ module.exports = {
     exec_mode: 'fork',
     instances: 1,
     kill_timeout: 3000,
-    wait_ready: true
+    wait_ready: true,
+    watch: true,
+    ignore_watch: [
+      "node_modules",
+      "logs",
+      ".git",
+      "*.log"
+    ],
+    watch_options: {
+      followSymlinks: false,
+      usePolling: true
+    }
   }]
 }

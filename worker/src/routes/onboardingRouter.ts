@@ -1,84 +1,48 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { z } from "zod";
-import { User } from "@/models/User";
 import { authenticateToken } from "@/middleware/auth";
 import onboardingSchemas from "@/schemas/apiSchemas/onboardingSchemas";
+import UserModel from "@/models/supabase/UserProfile";
 
 const onboardingRouter = new Hono();
 
-const createUser = z.object({
-  name: z.string().min(4),
-});
-
 onboardingRouter.post(
-  "/create-user",
-  zValidator("json", createUser),
+  "/set-preferences",
+  authenticateToken,
+  zValidator("json", onboardingSchemas.setPreferences),
   async (c) => {
     try {
-      const data = c.req.valid("json");
+      const body = c.req.valid("json");
+      const { supabase_id, preferences } = body;
 
-      if (await User.findOne({ name: data.name })) {
-        return c.json(
-          {
-            message: `User ${data.name} already exists`,
-          },
-          400
-        );
+      // Change findById to findOne with supabase_id
+      const user = await UserModel.findOne({ supabase_id: supabase_id });
+
+      if (!user) {
+        return c.json({
+          message: "User not found",
+        }, 404);
       }
-      // Create new user in database
-      const user = new User({
-        name: data.name,
-      });
 
-      await user.save();
-
-      return c.json(
+      // Change findByIdAndUpdate to findOneAndUpdate with supabase_id
+      await UserModel.findOneAndUpdate(
+        { supabase_id: supabase_id },
         {
-          message: `User ${data.name} created successfully`,
+          preferences: preferences,
         },
-        201
       );
+
+      return c.json({
+        message: "Preferences updated successfully",
+      }, 200);
     } catch (error) {
-      console.error("Error creating user:", error);
-      return c.json(
-        {
-          message: "Error creating user",
-          error: error instanceof Error ? error.message : "Unknown error",
-        },
-        500
-      );
+      console.error("Error updating preferences:", error);
+      return c.json({
+        message: "Error updating preferences",
+        error: error instanceof Error ? error.message : "Unknown error",
+      }, 500);
     }
-  }
+  },
 );
-
-onboardingRouter.get("/usr", authenticateToken, async (c) => {
-  return c.json({
-    message: "User fetched successfully and authenticated",
-  });
-});
-
-onboardingRouter.post("/set-preferences", authenticateToken, zValidator("json", onboardingSchemas.setPreferences), async (c) => {
-  const data = c.req.valid("json");
-
-  const { username, preferences } = data;
-
-  const user = await User.findOne({ name: username });
-
-
-  if (!user) {
-    return c.json({
-      message: "User not found",
-    }, 404);
-  }
-
-  user.preferences = preferences;
-
-  await user.save();
-
-  return c.json({
-    message: "Preferences set successfully",
-  }, 200);
-});
 
 export default onboardingRouter;
