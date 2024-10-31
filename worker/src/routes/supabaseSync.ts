@@ -11,7 +11,9 @@ supabaseSyncRouter.get("/", (c) => {
 
 supabaseSyncRouter.post("/sync/user", async (c) => {
   const body = await c.req.json();
+  console.log(body);
   const { type, record } = body;
+
 
   switch (type) {
     case "INSERT":
