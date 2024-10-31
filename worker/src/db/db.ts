@@ -31,4 +31,5 @@ const connectDB = async () => {
     }
 };
 
-export default connectDB;
+// Export both the connection function and the mongoose instance
+export { connectDB, mongoose as db };

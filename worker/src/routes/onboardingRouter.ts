@@ -3,6 +3,7 @@ import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { User } from "@/models/User";
 import { authenticateToken } from "@/middleware/auth";
+import onboardingSchemas from "@/schemas/apiSchemas/onboardingSchemas";
 
 const onboardingRouter = new Hono();
 
@@ -55,6 +56,29 @@ onboardingRouter.get("/usr", authenticateToken, async (c) => {
   return c.json({
     message: "User fetched successfully and authenticated",
   });
+});
+
+onboardingRouter.post("/set-preferences", authenticateToken, zValidator("json", onboardingSchemas.setPreferences), async (c) => {
+  const data = c.req.valid("json");
+
+  const { username, preferences } = data;
+
+  const user = await User.findOne({ name: username });
+
+
+  if (!user) {
+    return c.json({
+      message: "User not found",
+    }, 404);
+  }
+
+  user.preferences = preferences;
+
+  await user.save();
+
+  return c.json({
+    message: "Preferences set successfully",
+  }, 200);
 });
 
 export default onboardingRouter;
