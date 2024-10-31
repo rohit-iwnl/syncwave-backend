@@ -2,8 +2,9 @@ import { Hono } from "hono";
 import { logger } from "hono/logger";
 import onboardingRouter from "./routes/onboardingRouter";
 import onboardingRouteConstants from "./constants/routes/onboardingRouteConstants";
-import connectDB from "@/db/db";
+import { connectDB } from "@/db/db";
 import { authenticateToken } from "./middleware/auth";
+import supabaseSyncRouter from "./routes/supabaseSync";
 
 const app = new Hono();
 
@@ -26,5 +27,6 @@ app.get("/" , authenticateToken, (c) => {
 })
 
 app.route(onboardingRouteConstants.BASE_PATH, onboardingRouter);
+app.route("/api/supabase", supabaseSyncRouter);
 
 export default app;
