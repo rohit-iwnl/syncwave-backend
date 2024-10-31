@@ -1,10 +1,9 @@
 export interface UserProfile {
-    id: string;  // uuid
+    id: string;  // uuid as supabase_id
     email: string;
+    phone: string | null;
+    last_sign_in_at: Date | null;
+    created_at: Date;
     updated_at: Date;
-    username: string;
-    full_name: string | null;
-    avatar_url: string | null;
-    website: string | null;
-    has_completed_preferences: boolean;
+    deleted_at: Date | null;
 } 
