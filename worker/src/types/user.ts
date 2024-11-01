@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 interface UserPreferences {
     find_roommate: boolean;
     here_to_explore: boolean;
@@ -14,4 +16,6 @@ export interface UserProfile {
     updated_at: Date;
     deleted_at: Date | null;
     preferences: UserPreferences;
-} 
+}
+
+export const supabaseIdSchema = z.string().uuid();
