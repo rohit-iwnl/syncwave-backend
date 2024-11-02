@@ -138,9 +138,14 @@ const userProfileSchema = new mongoose.Schema({
                 default: false,
             },
             need_roommate: {
-                type: String,
+                type: Boolean,
                 required: false,
                 default: null,
+            },
+            looking_for_both: {
+                type: Boolean,
+                required: false,
+                default: false,
             }
         }
     },
