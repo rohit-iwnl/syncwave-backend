@@ -4,11 +4,11 @@ import { authenticateToken } from "@/middleware/auth";
 import onboardingSchemas from "@/schemas/apiSchemas/onboardingSchemas";
 import UserModel from "@/models/supabase/UserProfile";
 import { checkIfUserExists } from "@/utils/userUtils";
-
+import onboardingRouteConstants from "@/constants/routes/onboardingRouteConstants";
 const onboardingRouter = new Hono();
 
 onboardingRouter.post(
-  "/set-preferences",
+  onboardingRouteConstants.SET_PREFERENCES,
   authenticateToken,
   zValidator("json", onboardingSchemas.setPreferences),
   async (c) => {
@@ -45,7 +45,7 @@ onboardingRouter.post(
 );
 
 onboardingRouter.post(
-  "/set-personal-details",
+  onboardingRouteConstants.SET_PERSONAL_DETAILS,
   authenticateToken,
   zValidator("json", onboardingSchemas.setPersonalDetails),
   async (c) => {
@@ -80,7 +80,7 @@ onboardingRouter.post(
 );
 
 onboardingRouter.post(
-  "/set-housing-preferences",
+  onboardingRouteConstants.SET_HOUSING_PREFERENCES,
   authenticateToken,
   zValidator("json", onboardingSchemas.setHousingPreferences),
   async (c) => {
@@ -109,6 +109,41 @@ onboardingRouter.post(
       console.error("Error updating housing preferences:", error);
       return c.json({
         message: "Error updating housing preferences",
+        error: error instanceof Error ? error.message : "Unknown error",
+      }, 500);
+    }
+  },
+);
+
+onboardingRouter.post(
+  onboardingRouteConstants.SET_FIND_ROOM_PREFERENCES,
+  authenticateToken,
+  zValidator("json", onboardingSchemas.setFindRoomPreferences),
+  async (c) => {
+    try {
+      const body = c.req.valid("json");
+      const { supabase_id, find_room_preferences } = body;
+
+      const user = await checkIfUserExists(supabase_id);
+
+      if (!user) {
+        return c.json({
+          message: "User not found",
+        }, 404);
+      }
+
+      await UserModel.findOneAndUpdate(
+        { supabase_id: supabase_id },
+        { find_room_preferences: find_room_preferences },
+      );
+
+      return c.json({
+        message: "Find room preferences updated successfully",
+      }, 200);
+    } catch (error) {
+      console.error("Error updating find room preferences:", error);
+      return c.json({
+        message: "Error updating find room preferences",
         error: error instanceof Error ? error.message : "Unknown error",
       }, 500);
     }
