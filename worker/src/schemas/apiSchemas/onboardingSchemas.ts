@@ -42,9 +42,9 @@ const onboardingSchemas = Object.freeze({
         min: z.number().min(500).max(3000),
         max: z.number().min(500).max(3000)
       }),
-      bedrooms: z.array(z.enum(['1', '2', '3', '4', 'Any'])),
-      bathrooms: z.array(z.enum(['1', '2', '3', '4', 'Any'])),
-      preferred_roommates: z.array(z.number()),
+      bedrooms: z.array(z.enum(['1', '2', '3', '4+', 'Any'])),
+      bathrooms: z.array(z.enum(['1', '2', '3', '4+', 'Any'])),
+      preferred_roommates: z.array(z.enum(['1', '2', '3', '4+', 'Any'])),
       furnishing: z.array(z.enum(['furnished', 'unfurnished', 'semi-furnished'])),
       amenities: z.array(z.string())
     })
