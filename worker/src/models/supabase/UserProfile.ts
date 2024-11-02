@@ -87,6 +87,49 @@ const userProfileSchema = new mongoose.Schema({
         required: false,
         default: null,
     },
+    housing_preferences: {
+        type: {
+            property_types: [{
+                type: String,
+                enum: ['condo', 'duplex', 'apartment', 'studio']
+            }],
+            rent_range: {
+                min: {
+                    type: Number,
+                    min: 200,
+                    max: 4000,
+                    required: true
+                },
+                max: {
+                    type: Number,
+                    min: 200,
+                    max: 4000,
+                    required: true
+                }
+            },
+            property_size: {
+                min: {
+                    type: Number,
+                    min: 500,
+                    max: 3000,
+                    required: true
+                },
+                max: {
+                    type: Number,
+                    min: 500,
+                    max: 3000,
+                    required: true
+                }
+            },
+            bedrooms: [String],
+            bathrooms: [String],
+            preferred_roommates: [String],
+            furnishing: [String],
+            amenities: [String]
+        },
+        required: false,
+        default: null
+    },
 });
 
 const UserModel = mongoose.model("UserProfile", userProfileSchema);
