@@ -121,8 +121,8 @@ const userProfileSchema = new mongoose.Schema({
                     required: true
                 }
             },
-            bedrooms: [Number],
-            bathrooms: [Number],
+            bedrooms: [String],
+            bathrooms: [String],
             preferred_roommates: [String],
             furnishing: [String],
             amenities: [String]
