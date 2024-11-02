@@ -36,7 +36,8 @@ export async function checkIfUserExists(supabase_id: string) {
   const user = await UserModel.findOne({ supabase_id: supabase_id });
 
   if (user) {
-    return true;
+    return user;
   }
-  return false;
+  
+  return null;
 }
