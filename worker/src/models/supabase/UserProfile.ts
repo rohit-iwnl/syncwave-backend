@@ -130,6 +130,20 @@ const userProfileSchema = new mongoose.Schema({
         required: false,
         default: null
     },
+    find_room_preferences: {
+        type : {
+            need_room : {
+                type: Boolean,
+                required: false,
+                default: false,
+            },
+            need_roommate: {
+                type: String,
+                required: false,
+                default: null,
+            }
+        }
+    },
 });
 
 const UserModel = mongoose.model("UserProfile", userProfileSchema);
