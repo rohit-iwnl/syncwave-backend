@@ -52,18 +52,6 @@ const onboardingSchemas = Object.freeze({
       amenities: z.array(z.string())
     })
   }),
-
-    // Set user personal details (Personal Details View)
-    setPersonalDetails: z.object({
-        supabase_id: z.string().uuid(),
-        personal_details: z.object({
-            country: z.string(),
-            state: z.string(),
-            gender: z.string().optional(),
-            field: z.string(),
-            pronouns: z.string(),
-        }),
-    }),
 });
 
 export default onboardingSchemas;
