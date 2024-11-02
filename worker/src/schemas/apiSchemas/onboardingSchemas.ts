@@ -49,6 +49,16 @@ const onboardingSchemas = Object.freeze({
       amenities: z.array(z.string()),
     }),
   }),
+
+  // set user's find roomate preferences (This is from the onboarding view)
+  setFindRoomPreferences: z.object({
+    supabase_id: z.string().uuid(),
+    find_room_preferences: z.object({
+      need_room: z.boolean().optional(),
+      need_roommate: z.boolean().optional(),
+      looking_for_both: z.boolean().optional(),
+    }),
+  }),
 });
 
 export default onboardingSchemas;
