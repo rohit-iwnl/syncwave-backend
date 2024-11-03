@@ -3,9 +3,11 @@ import { logger } from "hono/logger";
 import onboardingRouter from "./routes/onboardingRouter";
 import onboardingRouteConstants from "./constants/routes/onboardingRouteConstants";
 import supabaseRouteConstants from "@/constants/routes/supabaseRouteConstants";
+import propertyRouteConstants from "@/constants/routes/propertyRouteConstants";
 import { connectDB } from "@/db/db";
 import { authenticateToken } from "./middleware/auth";
 import supabaseSyncRouter from "./routes/supbaseSyncRouter";
+import propertyRouter from "@/routes/propertyRouter/propertyRouter";
 
 const app = new Hono();
 
@@ -29,5 +31,5 @@ app.get("/", authenticateToken, (c) => {
 
 app.route(onboardingRouteConstants.BASE_PATH, onboardingRouter);
 app.route(supabaseRouteConstants.BASE_PATH, supabaseSyncRouter);
-
+app.route(propertyRouteConstants.BASE_PATH, propertyRouter);
 export default app;
