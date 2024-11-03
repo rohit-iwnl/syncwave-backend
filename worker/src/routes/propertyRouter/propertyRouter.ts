@@ -1,68 +1,117 @@
 import { Hono } from "hono";
 import OpenAI from "openai";
 import {
-  PropertyCompleteSchema,
-  PropertyCreateSchema,
+  PropertyGenerateDescriptionSchema,
 } from "../../schemas/apiSchemas/propertyApiSchemas";
-import { PropertyModel } from "../../models/property/PropertyModel";
 import { zValidator } from "@hono/zod-validator";
+import { z } from "zod";
 
 const property = new Hono();
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+const PropertyDescriptionSchema = z.object({
+  description: z.string().max(350),
+});
+
 property.post(
   "/generate-description",
-  zValidator("json", PropertyCreateSchema),
+  zValidator("json", PropertyGenerateDescriptionSchema),
   async (c) => {
     try {
       const propertyData = c.req.valid("json");
 
-      // Construct the prompt for GPT
-      const prompt =
-        `Generate a compelling property listing description for a ${propertyData.type} with the following details:
-    - ${propertyData.bedrooms} bedroom(s)
-    - ${propertyData.bathrooms} bathroom(s)
-    - ${propertyData.square_footage} square feet
-    - Monthly rent: $${propertyData.monthly_base_rent}
-    - Per person rent: $${propertyData.per_person_rent}
-    - Location: ${propertyData.location}
-    - Furnishing: ${propertyData.furnishing}
-    - Amenities: ${propertyData.amenities}
-    - Looking for ${propertyData.preferred_roommates} roommate(s)
+      const { property, supabase_id } = propertyData;
 
-    Write a natural, engaging description that highlights these features. Keep it concise but informative within 350 characters. Also write it like a student
-    is writing a description for a roommate posting on a college website. keep it very casual and friendly. Look around the property and describe it like a human would.
-    with benefits like stores nearby, public transport, and other benefits.`;
-
-      // Generate description using GPT
       const completion = await openai.chat.completions.create({
-        messages: [{ role: "user", content: prompt }],
-        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "user",
+            content:
+              `Generate a compelling property listing description for a ${property.type} with the following details:
+              - ${property.bedrooms} bedroom(s)
+              - ${property.bathrooms} bathroom(s)
+              - ${property.square_footage} square feet
+              - Monthly rent: $${property.monthly_base_rent}
+              - Per person rent: $${property.per_person_rent}
+              - Location: ${property.location}
+              - Furnishing: ${property.furnishing}
+              - Amenities: ${property.amenities}
+              - Preferrably looking for ${property.preferred_roommates} to live with.`,
+          },
+        ],
+        model: "gpt-4o-mini-2024-07-18",
+        functions: [
+          {
+            name: "generate_property_description",
+            description:
+              "Generate a structured property description for a student housing listing. You dont have to include all the details, just the most important ones.",
+            parameters: {
+              type: "object",
+              properties: {
+                description: {
+                  type: "string",
+                  description:
+                    "A casual, friendly description written from a student's perspective and keep it short and concise, maximum 350 characters",
+                },
+              },
+              required: ["description"],
+            },
+          },
+        ],
+        function_call: { name: "generate_property_description" },
       });
 
-      const generatedDescription = completion.choices[0].message.content;
+      // Check if function call exists
+      if (!completion.choices[0].message.function_call) {
+        return c.json({
+          success: false,
+          error: "No function call in OpenAI response",
+          code: "OPENAI_NO_FUNCTION_CALL"
+        }, 400);
+      }
 
-      // Combine the original data with the generated description
-      const completeProperty = PropertyCompleteSchema.parse({
-        ...propertyData,
-        description: generatedDescription,
-      });
+      // Parse the function call arguments
+      let functionArgs;
+      try {
+        functionArgs = JSON.parse(completion.choices[0].message.function_call.arguments);
+      } catch (parseError) {
+        return c.json({
+          success: false,
+          error: "Failed to parse OpenAI response",
+          code: "INVALID_RESPONSE_FORMAT"
+        }, 400);
+      }
 
-      // Save to MongoDB
-      const property = await PropertyModel.create(completeProperty);
-
-      return c.json({
-        id: property._id,
-        description: generatedDescription,
-      }, 201);
+      // Validate the parsed result
+      const validationResult = PropertyDescriptionSchema.safeParse(functionArgs);
+      if (!validationResult.success) {
+        return c.json({
+          success: false,
+          error: "Invalid description format in OpenAI response",
+          code: "INVALID_DESCRIPTION_FORMAT",
+          details: validationResult.error.errors
+        }, 400);
+      }
+      
+      return c.json(validationResult.data, 201);
     } catch (error) {
       console.error("Error generating property description:", error);
+      
+      if (error instanceof OpenAI.APIError) {
+        return c.json({
+          success: false,
+          error: "OpenAI API error",
+          code: "OPENAI_API_ERROR",
+          details: error.message
+        }, 500);
+      }
+
       return c.json({
         success: false,
-        error: error instanceof Error
-          ? error.message
-          : "Unknown error occurred",
-      }, 400);
+        error: "Internal server error",
+        code: "INTERNAL_SERVER_ERROR",
+        details: error instanceof Error ? error.message : "Unknown error occurred"
+      }, 500);
     }
   },
 );

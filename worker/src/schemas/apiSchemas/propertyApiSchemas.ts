@@ -20,8 +20,31 @@ export const PropertyCreateSchema = z.object({
   coordinates: z.object({
     latitude: z.number(),
     longitude: z.number()
+  }),
+  description: z.string().max(350)
+});
+
+
+export const PropertyGenerateDescriptionSchema = z.object({
+  supabase_id: z.string(),
+  property: z.object({
+    location: z.string(),
+    monthly_base_rent: z.number().positive(),
+    per_person_rent: z.number().positive(),
+    square_footage: z.number().positive(),
+    type: z.enum(['condo', 'duplex', 'apartment', 'studio']),
+    bedrooms: BedroomEnum,
+    bathrooms: BathroomEnum,
+    preferred_roommates: RoommateEnum,
+    furnishing: FurnishingEnum,
+    amenities: z.array(z.string()),
+    coordinates: z.object({
+      latitude: z.number(),
+      longitude: z.number()
+    })
   })
 });
+
 
 // Export the enums if you need to use them elsewhere
 export const PropertyEnums = {
