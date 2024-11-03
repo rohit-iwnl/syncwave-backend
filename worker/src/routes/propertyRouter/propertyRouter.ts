@@ -51,7 +51,7 @@ property.post(
                 description: {
                   type: "string",
                   description:
-                    "A casual, friendly description written from a student's perspective and keep it short and concise, maximum 350 characters",
+                    "A casual, friendly description written from a student's perspective trying to get roommates to live with them. Please do not sound like a leasing agent or a realtor and keep it short and concise, maximum 350 characters",
                 },
               },
               required: ["description"],
