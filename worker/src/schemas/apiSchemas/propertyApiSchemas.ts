@@ -3,7 +3,7 @@ import { z } from 'zod';
 const RoommateEnum = z.enum(['1', '2', '3', '4', '5', 'Custom']);
 const BedroomEnum = z.enum(['1', '2', '3', '4+']);
 const BathroomEnum = z.enum(['1', '2', '3', '4+']);
-const FurnishingEnum = z.enum(['Fully Furnished', 'Semi Furnished']);
+const FurnishingEnum = z.enum(['Fully Furnished', 'Semi Furnished', 'Unfurnished']);
 
 export const PropertyCreateSchema = z.object({
   supabase_id: z.string(),
