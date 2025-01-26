@@ -29,7 +29,7 @@ const PropertySchema = new Schema({
   },
   square_footage: {
     type: Number,
-    required: true
+    required: true,
   },
   type: {
     type: String,

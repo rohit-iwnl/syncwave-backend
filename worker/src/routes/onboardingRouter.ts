@@ -23,6 +23,7 @@ onboardingRouter.post(
           message: "User not found",
         }, 404);
       }
+      // Test HMR
 
       await UserModel.findOneAndUpdate(
         { supabase_id: supabase_id },
