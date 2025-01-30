@@ -35,14 +35,14 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD:?err}
       - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE:?err}
       - MONGODB_ENABLE_AUTHENTICATION=true
-    command: ["--auth", "--replSet", "rs0"]
+    command: ["--auth"]
     volumes:
       - db-data:/data/db
       - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
     healthcheck:
       test: >
-        mongosh --username $${MONGO_INITDB_ROOT_USERNAME} --password $${MONGO_INITDB_ROOT_PASSWORD}
-        --authenticationDatabase admin --eval "db.runCommand('ping').ok" $${MONGO_INITDB_DATABASE}
+        mongosh --username ${MONGO_INITDB_ROOT_USERNAME} --password ${MONGO_INITDB_ROOT_PASSWORD}
+        --authenticationDatabase admin --eval "db.runCommand('ping').ok" ${MONGO_INITDB_DATABASE}
       interval: 10s
       timeout: 10s
       retries: 5
@@ -57,7 +57,7 @@ services:
     ports:
       - "3100:3100"
     environment:
-      - MONGOKU_DEFAULT_HOST=mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@syncwave-db:27017/admin?authSource=admin&replicaSet=rs0
+      - MONGOKU_DEFAULT_HOST=mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@syncwave-db:27017/admin?authSource=admin
     depends_on:
       syncwave-db:
         condition: service_healthy
