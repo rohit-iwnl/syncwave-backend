@@ -53,13 +53,13 @@ services:
     ports:
       - "3100:3100"
     environment:
-      - MONGOKU_DEFAULT_HOST=mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@syncwave-db:27017/${MONGO_INITDB_DATABASE}?authSource=admin
+      - MONGOKU_DEFAULT_HOST=mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@syncwave-db:27017/admin?authSource=admin
     depends_on:
       syncwave-db:
         condition: service_healthy
     networks:
       - syncwave-network
-    restart: unless-stopped
+    restart: on-failure:3
 
 networks:
   syncwave-network:
