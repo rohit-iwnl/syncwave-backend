@@ -35,7 +35,7 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD:?err}
       - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE:?err}
       - MONGODB_ENABLE_AUTHENTICATION=true
-    command: ["--auth"]
+    command: ["--auth", "--replSet", "rs0"]
     volumes:
       - db-data:/data/db
       - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
