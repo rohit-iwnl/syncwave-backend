@@ -1,31 +1,31 @@
-import { Schema, model } from 'mongoose';
+import { model, Schema } from "mongoose";
 
 const PropertySchema = new Schema({
   _id: {
     type: Schema.Types.ObjectId,
-    auto: true  // MongoDB will auto-generate this
+    auto: true, // MongoDB will auto-generate this
   },
   supabase_id: {
     type: String,
     required: true,
-    ref: 'UserProfile'  // References the UserProfile collection
+    ref: "UserProfile", // References the UserProfile collection
   },
   description: {
     type: String,
     required: true,
-    default: null
+    default: null,
   },
   location: {
     type: String,
-    required: true
+    required: true,
   },
   monthly_base_rent: {
     type: Number,
-    required: true
+    required: true,
   },
   per_person_rent: {
     type: Number,
-    required: true
+    required: true,
   },
   square_footage: {
     type: Number,
@@ -33,53 +33,66 @@ const PropertySchema = new Schema({
   },
   type: {
     type: String,
-    enum: ['condo', 'duplex', 'apartment', 'studio'],
-    required: true
+    enum: ["condo", "duplex", "apartment", "studio"],
+    required: true,
+  },
+  plan: {
+    type: String,
+    enum: ["Sublease", "Looking for roommate", "Temporary Stay"],
+    required: true,
+  },
+  startDate: {
+    type: Date,
+    required: true,
+  },
+  endDate: {
+    type: Date,
+    required: false,
   },
   bedrooms: [{
     type: String,
-    required: true
+    required: true,
   }],
   bathrooms: [{
     type: String,
-    required: true
+    required: true,
   }],
   preferred_roommates: [{
     type: String,
-    required: true
+    required: true,
   }],
   furnishing: [{
     type: String,
-    required: true
+    required: true,
   }],
   amenities: [{
     type: String,
-    required: true
+    required: true,
   }],
   coordinates: {
     latitude: {
       type: Number,
-      required: true
+      required: true,
     },
     longitude: {
       type: Number,
-      required: true
-    }
+      required: true,
+    },
   },
   created_at: {
     type: Date,
-    default: Date.now
+    default: Date.now,
   },
   updated_at: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
 // Update the timestamps before saving
-PropertySchema.pre('save', function(next) {
+PropertySchema.pre("save", function (next) {
   this.updated_at = new Date();
   next();
 });
 
-export const PropertyModel = model('Property', PropertySchema);
+export const PropertyModel = model("Property", PropertySchema);
