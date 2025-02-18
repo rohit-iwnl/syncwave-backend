@@ -59,6 +59,38 @@ const onboardingSchemas = Object.freeze({
       looking_for_both: z.boolean().optional(),
     }),
   }),
+
+  setNewPropertyAdSchema: z.object({
+    supabase_id: z.string().uuid(),
+    property_details : z.object({
+      property_types: z.array(
+        z.enum(["condo", "duplex", "apartment", "studio"]),
+      ),
+      total_rent : z.number(),
+      rent_per_person: z.number(),
+      start_date : z.date(),
+      end_date : z.date().optional(),
+      location: z.object({
+        city: z.string(),
+        state: z.string(),
+        country: z.string(),
+        zip_code: z.string(),
+        latitude: z.number(),
+        longitude: z.number(),
+      }),
+      people_per_unit: z.number()
+      property_size: z.object({
+        min: z.number().min(500).max(3000),
+        max: z.number().min(500).max(3000),
+      }),
+      bedrooms: z.array(z.enum(["1", "2", "3", "4+", "any"])),
+      bathrooms: z.array(z.enum(["1", "2", "3", "4+", "any"])),
+      preferred_roommates: z.array(z.enum(["1", "2", "3", "4+", "any"])),
+      furnishing: z.array(z.enum(["fully furnished", "any", "semi furnished"])),
+      amenities: z.array(z.string()),
+    })
+  }),
+
 });
 
 export default onboardingSchemas;
