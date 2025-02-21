@@ -17,6 +17,8 @@ const app = new Hono();
     await connectDB();
   } catch (error) {
     console.error('Failed to connect to MongoDB:', error);
+
+    throw new Error("Failed to connect to MongoDB");
     // Continue running the app, but MongoDB features won't work
   }
 })();
