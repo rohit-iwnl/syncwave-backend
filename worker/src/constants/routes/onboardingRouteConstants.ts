@@ -4,7 +4,6 @@ const onboardingRouteConstants = Object.freeze({
     SET_FIND_ROOM_PREFERENCES: "/set-find-room-preferences",
     SET_HOUSING_PREFERENCES: "/set-housing-preferences",
     SET_PERSONAL_DETAILS: "/set-personal-details",
-
 })
 
 export default onboardingRouteConstants;
