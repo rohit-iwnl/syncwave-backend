@@ -1,11 +1,17 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const connectDB = async () => {
     if (!process.env.MONGODB_URI) {
-        throw new Error("MONGODB_URI is not defined in the environment variables");
+        throw new Error(
+            "MONGODB_URI is not defined in the environment variables",
+        );
     }
-    
+
     console.log("Connecting to MongoDB at", process.env.MONGODB_URI);
+
+    console.log(
+        `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.MONGO_INITDB_ROOT_PASSWORD}@syncwave-db:27017/${process.env.MONGO_INITDB_DATABASE}?authSource=admin`,
+    );
 
     try {
         await mongoose.connect(process.env.MONGODB_URI, {
@@ -15,18 +21,17 @@ const connectDB = async () => {
             retryWrites: true,
             retryReads: true,
         });
-        console.log('MongoDB connected');
+        console.log("MongoDB connected");
 
-        mongoose.connection.on('error', err => {
-            console.error('MongoDB connection error:', err);
+        mongoose.connection.on("error", (err) => {
+            console.error("MongoDB connection error:", err);
         });
 
-        mongoose.connection.on('disconnected', () => {
-            console.log('MongoDB disconnected');
+        mongoose.connection.on("disconnected", () => {
+            console.log("MongoDB disconnected");
         });
-
     } catch (error) {
-        console.error('MongoDB connection error:', error);
+        console.error("MongoDB connection error:", error);
         throw error;
     }
 };
