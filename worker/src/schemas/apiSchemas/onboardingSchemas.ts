@@ -78,7 +78,7 @@ const onboardingSchemas = Object.freeze({
         latitude: z.number(),
         longitude: z.number(),
       }),
-      people_per_unit: z.number()
+      people_per_unit: z.number(),
       property_size: z.object({
         min: z.number().min(500).max(3000),
         max: z.number().min(500).max(3000),
