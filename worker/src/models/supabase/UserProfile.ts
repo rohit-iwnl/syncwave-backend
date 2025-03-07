@@ -57,7 +57,7 @@ const userProfileSchema = new mongoose.Schema({
         default: null,
     },
     personal_details: {
-        type : {
+        type: {
             country: {
                 type: String,
                 required: false,
@@ -91,48 +91,48 @@ const userProfileSchema = new mongoose.Schema({
         type: {
             property_types: [{
                 type: String,
-                enum: ['condo', 'duplex', 'apartment', 'studio']
+                enum: ["condo", "duplex", "apartment", "studio"],
             }],
             rent_range: {
                 min: {
                     type: Number,
                     min: 200,
                     max: 4000,
-                    required: true
+                    required: true,
                 },
                 max: {
                     type: Number,
                     min: 200,
                     max: 4000,
-                    required: true
-                }
+                    required: true,
+                },
             },
             property_size: {
                 min: {
                     type: Number,
                     min: 500,
                     max: 3000,
-                    required: true
+                    required: true,
                 },
                 max: {
                     type: Number,
                     min: 500,
                     max: 3000,
-                    required: true
-                }
+                    required: true,
+                },
             },
             bedrooms: [String],
             bathrooms: [String],
             preferred_roommates: [String],
             furnishing: [String],
-            amenities: [String]
+            amenities: [String],
         },
         required: false,
-        default: null
+        default: null,
     },
     find_room_preferences: {
-        type : {
-            need_room : {
+        type: {
+            need_room: {
                 type: Boolean,
                 required: false,
                 default: false,
@@ -146,8 +146,8 @@ const userProfileSchema = new mongoose.Schema({
                 type: Boolean,
                 required: false,
                 default: false,
-            }
-        }
+            },
+        },
     },
 });
 
