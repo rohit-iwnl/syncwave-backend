@@ -8,6 +8,8 @@ import { connectDB } from "@/db/db";
 import { authenticateToken } from "./middleware/auth";
 import supabaseSyncRouter from "./routes/supbaseSyncRouter";
 import propertyRouter from "@/routes/propertyRouter/propertyRouter";
+import personalityRouter from "@/routes/personality/personalityRouter";
+import personalityTraitConstants from "@/constants/routes/personalityTraitConstants";
 
 const app = new Hono();
 
@@ -34,4 +36,5 @@ app.get("/", authenticateToken, (c) => {
 app.route(onboardingRouteConstants.BASE_PATH, onboardingRouter);
 app.route(supabaseRouteConstants.BASE_PATH, supabaseSyncRouter);
 app.route(propertyRouteConstants.BASE_PATH, propertyRouter);
+app.route(personalityTraitConstants.BASE_PATH, personalityRouter);
 export default app;

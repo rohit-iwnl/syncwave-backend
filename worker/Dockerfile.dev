@@ -1,0 +1,19 @@
+FROM oven/bun:latest
+
+WORKDIR /app
+
+# Copy package.json and bun.lockb
+COPY package.json bun.lockb* ./
+
+# Install dependencies
+RUN bun install
+
+# Copy the rest of the application
+COPY . .
+
+# Expose the port
+EXPOSE 8000
+
+# Run the application with hot reloading
+# CMD ["bun", "run", "dev"]
+CMD ["sh", "/usr/src/app/entrypoint.sh"]
