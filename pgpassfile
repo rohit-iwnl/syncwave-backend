@@ -1,0 +1,1 @@
+postgres-db:5432:syncwave_db:syncwave_user:syncwave_password 

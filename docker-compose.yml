@@ -13,65 +13,84 @@ services:
       - ./entrypoint.sh:/usr/src/app/entrypoint.sh
     environment:
       - BEARER_TOKEN=${BEARER_TOKEN}
-      - MONGODB_URI=mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@syncwave-db:27017/${MONGO_INITDB_DATABASE}?authSource=admin
-      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME:?err}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD:?err}
-      - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE:?err}
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres-db:5432/${POSTGRES_DB}?schema=public
+      - POSTGRES_USER=${POSTGRES_USER:?err}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?err}
+      - POSTGRES_DB=${POSTGRES_DB:?err}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
       - NODE_ENV=${NODE_ENV}
       - BUN_RUNTIME_ARGS=--hot
     depends_on:
-      syncwave-db:
+      postgres-db:
         condition: service_healthy
     networks:
       - syncwave-network
     restart: unless-stopped
 
-  syncwave-db:
-    image: mongo:5.0
-    container_name: "syncwave-db"
+  postgres-db:
+    image: postgres:15
+    container_name: "syncwave-postgres"
     ports:
-      - "27017:27017"
+      - "5432:5432"
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME:?err}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD:?err}
-      - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE:?err}
-      - MONGODB_ENABLE_AUTHENTICATION=true
-    command: ["--auth"]
+      - POSTGRES_USER=${POSTGRES_USER:?err}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?err}
+      - POSTGRES_DB=${POSTGRES_DB:?err}
     volumes:
-      - db-data:/data/db
-      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
+      - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: >
-        mongosh --username ${MONGO_INITDB_ROOT_USERNAME} --password ${MONGO_INITDB_ROOT_PASSWORD}
-        --authenticationDatabase admin --eval "db.runCommand('ping').ok" ${MONGO_INITDB_DATABASE}
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
-      timeout: 10s
+      timeout: 5s
       retries: 5
-      start_period: 40s
+      start_period: 10s
     networks:
       - syncwave-network
     restart: always
 
-  mongoku:
-    container_name: syncwave-mongoku
-    image: huggingface/mongoku
+  pgadmin:
+    container_name: syncwave-pgadmin
+    image: dpage/pgadmin4:latest
     ports:
-      - "3100:3100"
+      - "5050:80"
     environment:
-      - MONGOKU_DEFAULT_HOST=mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@syncwave-db:27017/admin?authSource=admin
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL:-admin@syncwave.com}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD:-admin}
+      - PGADMIN_CONFIG_SERVER_MODE=False
     depends_on:
-      syncwave-db:
+      postgres-db:
         condition: service_healthy
     networks:
       - syncwave-network
     restart: unless-stopped
+    volumes:
+      - ./pgadmin-servers.json:/pgadmin4/servers.json:ro
+      - ./pgpassfile:/tmp/pgpassfile:ro
+
+  prisma-studio:
+    container_name: syncwave-prisma-studio
+    build: 
+      context: ./worker
+      dockerfile: Dockerfile
+    ports:
+      - "5555:5555"
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres-db:5432/${POSTGRES_DB}?schema=public
+    command: ["bun", "run", "db:studio", "--hostname", "0.0.0.0"]
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    networks:
+      - syncwave-network
+    restart: unless-stopped
+    volumes:
+      - ./worker/prisma:/usr/src/app/prisma:ro
 
 networks:
   syncwave-network:
     driver: bridge
 
 volumes:
-  db-data:
+  postgres-data:

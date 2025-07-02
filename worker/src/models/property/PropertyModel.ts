@@ -1,98 +1,165 @@
-import { model, Schema } from "mongoose";
+import { PrismaClient, Property, PropertyType, PropertyPlan } from "@prisma/client";
+import prisma from "@/db/db";
 
-const PropertySchema = new Schema({
-  _id: {
-    type: Schema.Types.ObjectId,
-    auto: true, // MongoDB will auto-generate this
-  },
-  supabase_id: {
-    type: String,
-    required: true,
-    ref: "UserProfile", // References the UserProfile collection
-  },
-  description: {
-    type: String,
-    required: true,
-    default: null,
-  },
-  location: {
-    type: String,
-    required: true,
-  },
-  monthly_base_rent: {
-    type: Number,
-    required: true,
-  },
-  per_person_rent: {
-    type: Number,
-    required: true,
-  },
-  square_footage: {
-    type: Number,
-    required: true,
-  },
-  type: {
-    type: String,
-    enum: ["condo", "duplex", "apartment", "studio"],
-    required: true,
-  },
-  plan: {
-    type: String,
-    enum: ["Sublease", "Looking for roommate", "Temporary Stay"],
-    required: true,
-  },
-  startDate: {
-    type: Date,
-    required: true,
-  },
-  endDate: {
-    type: Date,
-    required: false,
-  },
-  bedrooms: [{
-    type: String,
-    required: true,
-  }],
-  bathrooms: [{
-    type: String,
-    required: true,
-  }],
-  preferred_roommates: [{
-    type: String,
-    required: true,
-  }],
-  furnishing: [{
-    type: String,
-    required: true,
-  }],
-  amenities: [{
-    type: String,
-    required: true,
-  }],
-  coordinates: {
-    latitude: {
-      type: Number,
-      required: true,
-    },
-    longitude: {
-      type: Number,
-      required: true,
-    },
-  },
-  created_at: {
-    type: Date,
-    default: Date.now,
-  },
-  updated_at: {
-    type: Date,
-    default: Date.now,
-  },
-});
+// Type definitions for creating/updating properties
+export interface CreatePropertyData {
+  supabaseId: string;
+  description: string;
+  location: string;
+  monthlyBaseRent: number;
+  perPersonRent: number;
+  squareFootage: number;
+  type: PropertyType;
+  plan: PropertyPlan;
+  startDate: Date;
+  endDate?: Date;
+  bedrooms: string[];
+  bathrooms: string[];
+  preferredRoommates: string[];
+  furnishing: string[];
+  amenities: string[];
+  latitude: number;
+  longitude: number;
+}
 
-// Update the timestamps before saving
-PropertySchema.pre("save", function (next) {
-  this.updated_at = new Date();
-  next();
-});
+export interface UpdatePropertyData extends Partial<CreatePropertyData> {}
 
-export const PropertyModel = model("Property", PropertySchema);
+// Property service class with CRUD operations
+export class PropertyService {
+  // Create a new property
+  static async create(data: CreatePropertyData): Promise<Property> {
+    return await prisma.property.create({
+      data: {
+        supabaseId: data.supabaseId,
+        description: data.description,
+        location: data.location,
+        monthlyBaseRent: data.monthlyBaseRent,
+        perPersonRent: data.perPersonRent,
+        squareFootage: data.squareFootage,
+        type: data.type,
+        plan: data.plan,
+        startDate: data.startDate,
+        endDate: data.endDate,
+        bedrooms: data.bedrooms,
+        bathrooms: data.bathrooms,
+        preferredRoommates: data.preferredRoommates,
+        furnishing: data.furnishing,
+        amenities: data.amenities,
+        latitude: data.latitude,
+        longitude: data.longitude,
+      },
+      include: {
+        userProfile: true,
+      },
+    });
+  }
+
+  // Find property by ID
+  static async findById(id: string): Promise<Property | null> {
+    return await prisma.property.findUnique({
+      where: { id },
+      include: {
+        userProfile: true,
+      },
+    });
+  }
+
+  // Find all properties by supabase user ID
+  static async findBySupabaseId(supabaseId: string): Promise<Property[]> {
+    return await prisma.property.findMany({
+      where: { supabaseId },
+      include: {
+        userProfile: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
+  // Find all properties with optional filters
+  static async findMany(filters?: {
+    type?: PropertyType;
+    plan?: PropertyPlan;
+    minRent?: number;
+    maxRent?: number;
+    location?: string;
+  }): Promise<Property[]> {
+    const where: any = {};
+
+    if (filters?.type) where.type = filters.type;
+    if (filters?.plan) where.plan = filters.plan;
+    if (filters?.minRent || filters?.maxRent) {
+      where.monthlyBaseRent = {};
+      if (filters.minRent) where.monthlyBaseRent.gte = filters.minRent;
+      if (filters.maxRent) where.monthlyBaseRent.lte = filters.maxRent;
+    }
+    if (filters?.location) {
+      where.location = {
+        contains: filters.location,
+        mode: 'insensitive',
+      };
+    }
+
+    return await prisma.property.findMany({
+      where,
+      include: {
+        userProfile: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
+  // Update property by ID
+  static async update(id: string, data: UpdatePropertyData): Promise<Property> {
+    return await prisma.property.update({
+      where: { id },
+      data,
+      include: {
+        userProfile: true,
+      },
+    });
+  }
+
+  // Delete property by ID
+  static async delete(id: string): Promise<Property> {
+    return await prisma.property.delete({
+      where: { id },
+    });
+  }
+
+  // Find properties within a radius (basic implementation)
+  static async findNearby(
+    latitude: number,
+    longitude: number,
+    radiusKm: number = 10
+  ): Promise<Property[]> {
+    // Simple bounding box calculation (for more precise radius search, use PostGIS)
+    const latDiff = radiusKm / 111; // Rough conversion
+    const lonDiff = radiusKm / (111 * Math.cos(latitude * Math.PI / 180));
+
+    return await prisma.property.findMany({
+      where: {
+        latitude: {
+          gte: latitude - latDiff,
+          lte: latitude + latDiff,
+        },
+        longitude: {
+          gte: longitude - lonDiff,
+          lte: longitude + lonDiff,
+        },
+      },
+      include: {
+        userProfile: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+}
+
+// Export the service as default for backward compatibility
+export default PropertyService;
