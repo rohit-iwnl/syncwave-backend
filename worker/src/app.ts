@@ -16,10 +16,10 @@ const app = new Hono();
   try {
     await connectDB();
   } catch (error) {
-    console.error('Failed to connect to MongoDB:', error);
+    console.error('Failed to connect to PostgreSQL:', error);
 
-    throw new Error("Failed to connect to MongoDB");
-    // Continue running the app, but MongoDB features won't work
+    throw new Error("Failed to connect to PostgreSQL");
+    // Continue running the app, but PostgreSQL features won't work
   }
 })();
 
