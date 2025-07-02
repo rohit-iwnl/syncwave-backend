@@ -1,0 +1,86 @@
+// This is your Prisma schema file for PostgreSQL
+// Migrated from MongoDB to PostgreSQL with relational structure
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User Profile model - migrated from MongoDB UserProfile collection
+// Stores user authentication and preference data from Supabase
+model UserProfile {
+  id                String    @id @default(cuid())
+  supabaseId        String    @unique @map("supabase_id") // Foreign key to Supabase Auth
+  email             String
+  phone             String?
+  lastSignInAt      DateTime? @map("last_sign_in_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  deletedAt         DateTime? @map("deleted_at") // Soft delete support
+  
+  // JSON fields for complex nested objects (preserves MongoDB structure)
+  preferences       Json?     // User app preferences (find_roommate, etc.)
+  personalDetails   Json?     @map("personal_details") // Country, state, gender, etc.
+  housingPreferences Json?    @map("housing_preferences") // Property types, rent range, etc.
+  findRoomPreferences Json?   @map("find_room_preferences") // Room finding preferences
+  
+  // One-to-many relationship with properties
+  properties        Property[]
+
+  @@map("user_profiles")
+}
+
+// Property model - migrated from MongoDB Property collection
+// Stores rental property listings created by users
+model Property {
+  id               String   @id @default(cuid())
+  supabaseId       String   @map("supabase_id") // Links to UserProfile
+  description      String   // Property description
+  location         String   // Property address/location
+  monthlyBaseRent  Int      @map("monthly_base_rent") // Base monthly rent
+  perPersonRent    Int      @map("per_person_rent") // Per person rent cost
+  squareFootage    Int      @map("square_footage") // Property size in sq ft
+  type             PropertyType // Enum: condo, duplex, apartment, studio
+  plan             PropertyPlan // Enum: Sublease, Looking for roommate, etc.
+  startDate        DateTime @map("start_date") // Lease start date
+  endDate          DateTime? @map("end_date") // Lease end date (optional)
+  
+  // Array fields stored as JSON (preserves MongoDB array structure)
+  bedrooms         Json     // Array of bedroom descriptions
+  bathrooms        Json     // Array of bathroom descriptions
+  preferredRoommates Json   @map("preferred_roommates") // Preferred roommate types
+  furnishing       Json     // Furnishing details array
+  amenities        Json     // Property amenities array
+  
+  // Coordinates separated from nested object for better PostgreSQL indexing
+  latitude         Float    // Property latitude
+  longitude        Float    // Property longitude
+  
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+  
+  // Foreign key relationship to UserProfile
+  userProfile      UserProfile @relation(fields: [supabaseId], references: [supabaseId])
+
+  @@map("properties")
+}
+
+// Property type enumeration - matches MongoDB enum values
+enum PropertyType {
+  condo
+  duplex
+  apartment
+  studio
+}
+
+// Property plan enumeration - matches MongoDB enum values with mapping
+enum PropertyPlan {
+  Sublease              @map("Sublease")
+  LookingForRoommate    @map("Looking for roommate")
+  TemporaryStay         @map("Temporary Stay")
+} 

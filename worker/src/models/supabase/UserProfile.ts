@@ -1,156 +1,205 @@
-import mongoose from "mongoose";
+import { PrismaClient, UserProfile } from "@prisma/client";
+import prisma from "@/db/db";
 
-const userProfileSchema = new mongoose.Schema({
-    supabase_id: {
-        type: String,
-        required: true,
-        unique: true,
-    },
-    email: {
-        type: String,
-        required: true,
-    },
-    phone: {
-        type: String,
-        default: null,
-    },
-    last_sign_in_at: {
-        type: Date,
-        default: null,
-    },
-    created_at: {
-        type: Date,
-        default: Date.now,
-    },
-    updated_at: {
-        type: Date,
-        required: true,
-    },
-    deleted_at: {
-        type: Date,
-        default: null,
-    },
-    preferences: {
-        type: {
-            find_roommate: {
-                type: Boolean,
-                required: true,
-                default: false,
-            },
-            here_to_explore: {
-                type: Boolean,
-                required: true,
-                default: false,
-            },
-            lease_property: {
-                type: Boolean,
-                required: true,
-                default: false,
-            },
-            sell_buy_product: {
-                type: Boolean,
-                required: true,
-                default: false,
-            },
-        },
-        required: false,
-        default: null,
-    },
-    personal_details: {
-        type : {
-            country: {
-                type: String,
-                required: false,
-                default: null,
-            },
-            state: {
-                type: String,
-                required: false,
-                default: null,
-            },
-            gender: {
-                type: String,
-                required: false,
-                default: null,
-            },
-            field: {
-                type: String,
-                required: false,
-                default: null,
-            },
-            pronouns: {
-                type: String,
-                required: false,
-                default: null,
-            },
-        },
-        required: false,
-        default: null,
-    },
-    housing_preferences: {
-        type: {
-            property_types: [{
-                type: String,
-                enum: ['condo', 'duplex', 'apartment', 'studio']
-            }],
-            rent_range: {
-                min: {
-                    type: Number,
-                    min: 200,
-                    max: 4000,
-                    required: true
-                },
-                max: {
-                    type: Number,
-                    min: 200,
-                    max: 4000,
-                    required: true
-                }
-            },
-            property_size: {
-                min: {
-                    type: Number,
-                    min: 500,
-                    max: 3000,
-                    required: true
-                },
-                max: {
-                    type: Number,
-                    min: 500,
-                    max: 3000,
-                    required: true
-                }
-            },
-            bedrooms: [String],
-            bathrooms: [String],
-            preferred_roommates: [String],
-            furnishing: [String],
-            amenities: [String]
-        },
-        required: false,
-        default: null
-    },
-    find_room_preferences: {
-        type : {
-            need_room : {
-                type: Boolean,
-                required: false,
-                default: false,
-            },
-            need_roommate: {
-                type: Boolean,
-                required: false,
-                default: null,
-            },
-            looking_for_both: {
-                type: Boolean,
-                required: false,
-                default: false,
-            }
-        }
-    },
-});
+// Type definitions for user preferences (matching your original structure)
+export interface UserPreferences {
+  find_roommate?: boolean;
+  here_to_explore?: boolean;
+  lease_property?: boolean;
+  sell_buy_product?: boolean;
+}
 
-const UserModel = mongoose.model("UserProfile", userProfileSchema);
+export interface PersonalDetails {
+  country?: string;
+  state?: string;
+  gender?: string;
+  field?: string;
+  pronouns?: string;
+}
 
-export default UserModel;
+export interface HousingPreferences {
+  property_types?: string[];
+  rent_range?: {
+    min: number;
+    max: number;
+  };
+  property_size?: {
+    min: number;
+    max: number;
+  };
+  bedrooms?: string[];
+  bathrooms?: string[];
+  preferred_roommates?: string[];
+  furnishing?: string[];
+  amenities?: string[];
+}
+
+export interface FindRoomPreferences {
+  need_room?: boolean;
+  need_roommate?: boolean;
+  looking_for_both?: boolean;
+}
+
+// Type for creating/updating user profiles
+export interface CreateUserProfileData {
+  supabaseId: string;
+  email: string;
+  phone?: string;
+  lastSignInAt?: Date;
+  preferences?: UserPreferences;
+  personalDetails?: PersonalDetails;
+  housingPreferences?: HousingPreferences;
+  findRoomPreferences?: FindRoomPreferences;
+}
+
+export interface UpdateUserProfileData extends Partial<CreateUserProfileData> {}
+
+// UserProfile service class with CRUD operations
+export class UserProfileService {
+  // Create a new user profile
+  static async create(data: CreateUserProfileData): Promise<UserProfile> {
+    return await prisma.userProfile.create({
+      data: {
+        supabaseId: data.supabaseId,
+        email: data.email,
+        phone: data.phone,
+        lastSignInAt: data.lastSignInAt,
+        preferences: data.preferences as any,
+        personalDetails: data.personalDetails as any,
+        housingPreferences: data.housingPreferences as any,
+        findRoomPreferences: data.findRoomPreferences as any,
+      },
+      include: {
+        properties: true,
+      },
+    });
+  }
+
+  // Find user profile by ID
+  static async findById(id: string): Promise<UserProfile | null> {
+    return await prisma.userProfile.findUnique({
+      where: { id },
+      include: {
+        properties: true,
+      },
+    });
+  }
+
+  // Find user profile by Supabase ID
+  static async findBySupabaseId(supabaseId: string): Promise<UserProfile | null> {
+    return await prisma.userProfile.findUnique({
+      where: { supabaseId },
+      include: {
+        properties: true,
+      },
+    });
+  }
+
+  // Find user profile by email
+  static async findByEmail(email: string): Promise<UserProfile | null> {
+    return await prisma.userProfile.findFirst({
+      where: { email },
+      include: {
+        properties: true,
+      },
+    });
+  }
+
+  // Update user profile by Supabase ID
+  static async updateBySupabaseId(
+    supabaseId: string,
+    data: UpdateUserProfileData
+  ): Promise<UserProfile> {
+    return await prisma.userProfile.update({
+      where: { supabaseId },
+      data: {
+        email: data.email,
+        phone: data.phone,
+        lastSignInAt: data.lastSignInAt,
+        preferences: data.preferences as any,
+        personalDetails: data.personalDetails as any,
+        housingPreferences: data.housingPreferences as any,
+        findRoomPreferences: data.findRoomPreferences as any,
+      },
+      include: {
+        properties: true,
+      },
+    });
+  }
+
+  // Update user profile by ID
+  static async update(id: string, data: UpdateUserProfileData): Promise<UserProfile> {
+    return await prisma.userProfile.update({
+      where: { id },
+      data: {
+        email: data.email,
+        phone: data.phone,
+        lastSignInAt: data.lastSignInAt,
+        preferences: data.preferences as any,
+        personalDetails: data.personalDetails as any,
+        housingPreferences: data.housingPreferences as any,
+        findRoomPreferences: data.findRoomPreferences as any,
+      },
+      include: {
+        properties: true,
+      },
+    });
+  }
+
+  // Soft delete user profile
+  static async softDelete(supabaseId: string): Promise<UserProfile> {
+    return await prisma.userProfile.update({
+      where: { supabaseId },
+      data: {
+        deletedAt: new Date(),
+      },
+    });
+  }
+
+  // Hard delete user profile
+  static async delete(id: string): Promise<UserProfile> {
+    return await prisma.userProfile.delete({
+      where: { id },
+    });
+  }
+
+  // Find all active user profiles (not soft deleted)
+  static async findMany(includeDeleted: boolean = false): Promise<UserProfile[]> {
+    return await prisma.userProfile.findMany({
+      where: includeDeleted ? {} : { deletedAt: null },
+      include: {
+        properties: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
+  // Update last sign in time
+  static async updateLastSignIn(supabaseId: string): Promise<UserProfile> {
+    return await prisma.userProfile.update({
+      where: { supabaseId },
+      data: {
+        lastSignInAt: new Date(),
+      },
+    });
+  }
+
+  // Find users with specific preferences
+  static async findByPreferences(preferences: Partial<UserPreferences>): Promise<UserProfile[]> {
+    // Note: This is a simplified query. For complex JSON queries, you might need raw SQL
+    return await prisma.userProfile.findMany({
+      where: {
+        deletedAt: null,
+        // You can add more complex JSON filtering here if needed
+      },
+      include: {
+        properties: true,
+      },
+    });
+  }
+}
+
+// Export the service as default for backward compatibility
+export default UserProfileService;

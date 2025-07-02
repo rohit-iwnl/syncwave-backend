@@ -2,16 +2,22 @@
   "name": "worker",
   "scripts": {
     "dev": "bun run --hot src/index.ts",
-    "start": "bun run src/index.ts"
+    "start": "bun run src/index.ts",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio",
+    "migrate-data": "bun run src/scripts/migrate-mongo-to-postgres.ts"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.4.2",
+    "@prisma/client": "^5.7.1",
     "hono": "^4.7.0",
-    "mongoose": "^8.10.0",
     "openai": "^4.83.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "prisma": "^5.7.1"
   }
 }

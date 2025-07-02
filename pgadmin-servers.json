@@ -1,0 +1,19 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "SyncWave PostgreSQL",
+      "Group": "Servers",
+      "Host": "postgres-db",
+      "Port": 5432,
+      "MaintenanceDB": "syncwave_db",
+      "Username": "syncwave_user",
+      "PassFile": "/tmp/pgpassfile",
+      "SSLMode": "prefer",
+      "SSLCompression": 0,
+      "Timeout": 10,
+      "UseSSHTunnel": 0,
+      "TunnelPort": "22",
+      "TunnelAuthentication": 0
+    }
+  }
+} 

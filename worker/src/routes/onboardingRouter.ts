@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { authenticateToken } from "@/middleware/auth";
 import onboardingSchemas from "@/schemas/apiSchemas/onboardingSchemas";
-import UserModel from "@/models/supabase/UserProfile";
+import UserProfileService from "@/models/supabase/UserProfile";
 import { checkIfUserExists } from "@/utils/userUtils";
 import onboardingRouteConstants from "@/constants/routes/onboardingRouteConstants";
 const onboardingRouter = new Hono();
@@ -25,8 +25,8 @@ onboardingRouter.post(
       }
       // Test HMR
 
-      await UserModel.findOneAndUpdate(
-        { supabase_id: supabase_id },
+      await UserProfileService.updateBySupabaseId(
+        supabase_id,
         {
           preferences: preferences,
         },
@@ -62,9 +62,9 @@ onboardingRouter.post(
         }, 404);
       }
 
-      await UserModel.findOneAndUpdate(
-        { supabase_id: supabase_id },
-        { personal_details: personal_details },
+      await UserProfileService.updateBySupabaseId(
+        supabase_id,
+        { personalDetails: personal_details },
       );
 
       return c.json({
@@ -97,11 +97,12 @@ onboardingRouter.post(
         }, 404);
       }
 
-      await UserModel.findOneAndUpdate({
-        supabase_id: supabase_id,
-      }, {
-        housing_preferences: housing_preferences,
-      });
+      await UserProfileService.updateBySupabaseId(
+        supabase_id,
+        {
+          housingPreferences: housing_preferences,
+        },
+      );
 
       return c.json({
         message: "Housing preferences updated successfully",
@@ -133,9 +134,9 @@ onboardingRouter.post(
         }, 404);
       }
 
-      await UserModel.findOneAndUpdate(
-        { supabase_id: supabase_id },
-        { find_room_preferences: find_room_preferences },
+      await UserProfileService.updateBySupabaseId(
+        supabase_id,
+        { findRoomPreferences: find_room_preferences },
       );
 
       return c.json({

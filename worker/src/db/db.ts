@@ -1,40 +1,54 @@
-import mongoose from "mongoose";
+import { PrismaClient } from "@prisma/client";
+
+declare global {
+  var __prisma: PrismaClient | undefined;
+}
+
+// Singleton pattern for Prisma client
+let prisma: PrismaClient;
+
+if (process.env.NODE_ENV === "production") {
+  prisma = new PrismaClient();
+} else {
+  if (!global.__prisma) {
+    global.__prisma = new PrismaClient({
+      log: ["query", "error", "warn"],
+    });
+  }
+  prisma = global.__prisma;
+}
 
 const connectDB = async () => {
-    if (!process.env.MONGODB_URI) {
-        throw new Error(
-            "MONGODB_URI is not defined in the environment variables",
-        );
-    }
-
-    console.log("Connecting to MongoDB at", process.env.MONGODB_URI);
-
-    console.log(
-        `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.MONGO_INITDB_ROOT_PASSWORD}@syncwave-db:27017/${process.env.MONGO_INITDB_DATABASE}?authSource=admin`,
+  if (!process.env.DATABASE_URL) {
+    throw new Error(
+      "DATABASE_URL is not defined in the environment variables",
     );
+  }
 
-    try {
-        await mongoose.connect(process.env.MONGODB_URI, {
-            serverSelectionTimeoutMS: 10000,
-            connectTimeoutMS: 10000,
-            socketTimeoutMS: 10000,
-            retryWrites: true,
-            retryReads: true,
-        });
-        console.log("MongoDB connected");
+  console.log("Connecting to PostgreSQL...");
 
-        mongoose.connection.on("error", (err) => {
-            console.error("MongoDB connection error:", err);
-        });
+  try {
+    await prisma.$connect();
+    console.log("PostgreSQL connected successfully");
 
-        mongoose.connection.on("disconnected", () => {
-            console.log("MongoDB disconnected");
-        });
-    } catch (error) {
-        console.error("MongoDB connection error:", error);
-        throw error;
-    }
+    // Test the connection
+    await prisma.$queryRaw`SELECT 1`;
+    console.log("Database connection verified");
+  } catch (error) {
+    console.error("PostgreSQL connection error:", error);
+    throw error;
+  }
 };
 
-// Export both the connection function and the mongoose instance
-export { connectDB, mongoose as db };
+const disconnectDB = async () => {
+  try {
+    await prisma.$disconnect();
+    console.log("PostgreSQL disconnected");
+  } catch (error) {
+    console.error("Error disconnecting from PostgreSQL:", error);
+  }
+};
+
+// Export the Prisma client and connection functions
+export { connectDB, disconnectDB, prisma as db };
+export default prisma;

@@ -8,6 +8,8 @@ import { connectDB } from "@/db/db";
 import { authenticateToken } from "./middleware/auth";
 import supabaseSyncRouter from "./routes/supbaseSyncRouter";
 import propertyRouter from "@/routes/propertyRouter/propertyRouter";
+import personalityRouter from "@/routes/personality/personalityRouter";
+import personalityTraitConstants from "@/constants/routes/personalityTraitConstants";
 
 const app = new Hono();
 
@@ -16,10 +18,10 @@ const app = new Hono();
   try {
     await connectDB();
   } catch (error) {
-    console.error('Failed to connect to MongoDB:', error);
+    console.error('Failed to connect to PostgreSQL:', error);
 
-    throw new Error("Failed to connect to MongoDB");
-    // Continue running the app, but MongoDB features won't work
+    throw new Error("Failed to connect to PostgreSQL");
+    // Continue running the app, but PostgreSQL features won't work
   }
 })();
 
@@ -34,4 +36,5 @@ app.get("/", authenticateToken, (c) => {
 app.route(onboardingRouteConstants.BASE_PATH, onboardingRouter);
 app.route(supabaseRouteConstants.BASE_PATH, supabaseSyncRouter);
 app.route(propertyRouteConstants.BASE_PATH, propertyRouter);
+app.route(personalityTraitConstants.BASE_PATH, personalityRouter);
 export default app;
